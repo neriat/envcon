@@ -61,7 +61,7 @@ def _is_dict(type_: type) -> bool:
 
 
 def _is_generic_alias_dict_without_subscription(type_):
-    return get_origin(type_) is dict and get_args(type_) is ()
+    return get_origin(type_) is dict and get_args(type_) == ()
 
 
 def _to_list(value: str, value_type: type) -> List[Union[str, bool, int, float]]:

@@ -4,13 +4,13 @@ from typing import List, Dict
 import pytest
 
 from envcon import environment_configuration
-from shared import configuration_sample, PYTHON38_SKIP_MESSAGE, IS_PYTHON38
+from utils import sample_configuration, skip_if_python38_is_presented
 
 
 @pytest.fixture(scope="module", autouse=True)
 def patch_environ():
     os_environ_dump = os.environ
-    os.environ = configuration_sample
+    os.environ = sample_configuration
     yield
     os.environ = os_environ_dump
 
@@ -59,11 +59,7 @@ def test_simple_list_injection():
     assert Test.LIST_STRING == ["a", "b", "c"]
 
 
-# noinspection PyTypeHints
-@pytest.mark.skipif(
-    IS_PYTHON38,
-    reason=PYTHON38_SKIP_MESSAGE,
-)
+@skip_if_python38_is_presented
 def test_list_injection39():
     @environment_configuration
     class Test:
@@ -125,8 +121,6 @@ def test_dict_injection():
 
 
 def test_dict_from_type_injection():
-    x = 5
-
     @environment_configuration
     class Test:
         DICT_ENV: Dict

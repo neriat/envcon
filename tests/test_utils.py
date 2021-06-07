@@ -3,7 +3,7 @@ from typing import Optional, Union, List, Dict, Callable, Sequence, TypeVar
 import pytest
 
 from envcon.utils import type_utils, inspections, functional
-from shared import IS_PYTHON38, PYTHON38_SKIP_MESSAGE
+from utils import skip_if_python38_is_presented
 
 T = TypeVar("T")
 
@@ -30,11 +30,7 @@ def test_is_optional(type_: type, expected: bool):
     assert type_utils.is_optional(type_) == expected
 
 
-# noinspection PyTypeHints
-@pytest.mark.skipif(
-    IS_PYTHON38,
-    reason=PYTHON38_SKIP_MESSAGE,
-)
+@skip_if_python38_is_presented
 @pytest.mark.parametrize(
     "type_, expected",
     [
@@ -68,11 +64,7 @@ def test_is_list(type_: type, expected: bool):
     assert type_utils._is_list(type_) == expected
 
 
-# noinspection PyTypeHints
-@pytest.mark.skipif(
-    IS_PYTHON38,
-    reason=PYTHON38_SKIP_MESSAGE,
-)
+@skip_if_python38_is_presented
 @pytest.mark.parametrize(
     "type_, expected",
     [
