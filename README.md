@@ -19,6 +19,7 @@ Envcon heavily leaned on python type-hints and makes configuration simple and de
   - [Basic usage](#basic-usage)
   - [Prefix](#prefix)
   - [Optional](#optional)
+  - [Freezing Class](#freezing-class)
   - [Another Source](#another-source)
 - [Supported types](#supported-types)
   - [Casting](#casting)
@@ -36,6 +37,7 @@ Envcon heavily leaned on python type-hints and makes configuration simple and de
 - Default values
 - Prefix
 - human readable errors
+- freezing classes after injection
 
 ## Install
 
@@ -102,6 +104,36 @@ print(type(Configuration.NON_EXISTING_ENV_VER)) # <class 'NoneType'>
     
 ```
 
+
+### Freezing Class
+By default, after injection, modifications of fields is prevented.
+This feature is inspired by `@dataclass` frozen flag.
+This behaviour can be overridden, or explicitly described:  
+
+```python3
+from envcon import environment_configuration
+
+@environment_configuration(frozen=False)
+class MyConfiguration:
+  SOME_CONFIGURATION: str
+
+
+@environment_configuration
+class AnotherConfiguration:
+  SOME_CONFIGURATION: str
+
+
+MyConfiguration.SOME_CONFIGURATION = "yey"
+print(MyConfiguration.SOME_CONFIGURATION)  # yey
+AnotherConfiguration.SOME_CONFIGURATION = "oh"
+# Traceback (most recent call last):
+#   File "<input>", line 1, in <module>
+#   File "example.py", line 10, in __setattr__
+#     raise FrozenClassAttributesError()
+# envcon.metaclasses.FrozenClassAttributesError: Class is frozen. modifying attributes is not allowed
+```
+
+
 ### Another Source
 What if I want different source other than my `.env` file / `os.environ`? 
 ```python3
@@ -131,13 +163,6 @@ class ConfigurationA:
     NON_EXISTING_ENV_VER: int
 
 # LookupError: NON_EXISTING_ENV_VER is not an environment variable, nor has default value
-
-@environment_configuration
-class ConfigurationB:
-    ALLUSERSPROFILE: int
-
-# LookupError: NON_EXISTING_ENV_VER is not an environment variable, nor has default value
-
     
 ```
 
