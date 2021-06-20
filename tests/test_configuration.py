@@ -1,7 +1,7 @@
 from typing import List
 
 import pytest
-from envcon import configuration, FrozenClassAttributesError
+from envcon import configuration, FrozenError
 
 from utils import sample_configuration
 
@@ -33,25 +33,45 @@ def test_missing_field():
             NOT_EXIST: List[int]
 
 
-def test_set_frozen_attribute_in_frozen_class():
+def test_set_attribute_in_frozen_class():
     @configuration(prefix="", source=sample_configuration, frozen=True)
     class Test:
         SOME_A: str
 
-    with pytest.raises(FrozenClassAttributesError):
+    with pytest.raises(FrozenError):
         Test.SOME_A = "should fail"
 
 
-def test_delete_frozen_attribute_in_frozen_class():
+def test_delete_attribute_in_frozen_class():
     @configuration(prefix="", source=sample_configuration, frozen=True)
     class Test:
         SOME_A: str
 
-    with pytest.raises(FrozenClassAttributesError):
+    with pytest.raises(FrozenError):
         del Test.SOME_A
 
 
-def test_set_frozen_attribute_in_unfrozen_class():
+def test_set_attribute_in_frozen_class_instance():
+    @configuration(prefix="", source=sample_configuration, frozen=True)
+    class Test:
+        SOME_A: str
+
+    t = Test()
+    with pytest.raises(FrozenError):
+        t.SOME_A = "should fail"
+
+
+def test_delete_attribute_in_frozen_class_instance():
+    @configuration(prefix="", source=sample_configuration, frozen=True)
+    class Test:
+        SOME_A: str
+
+    t = Test()
+    with pytest.raises(FrozenError):
+        del t.SOME_A
+
+
+def test_set_attribute_in_unfrozen_class():
     @configuration(prefix="", source=sample_configuration, frozen=False)
     class Test:
         SOME_A: str
@@ -60,10 +80,33 @@ def test_set_frozen_attribute_in_unfrozen_class():
     assert Test.SOME_A == "should not fail"
 
 
-def test_delete_frozen_attribute_in_unfrozen_class():
+def test_delete_attribute_in_unfrozen_class():
     @configuration(prefix="", source=sample_configuration, frozen=False)
     class Test:
         SOME_A: str
 
     del Test.SOME_A
     assert not hasattr(Test, "SOME_A")
+
+
+def test_set_attribute_in_unfrozen_class_instance():
+    @configuration(prefix="", source=sample_configuration, frozen=False)
+    class Test:
+        SOME_A: str
+
+    t = Test()
+    t.SOME_A = "should not fail"
+    assert t.SOME_A == "should not fail"
+
+
+def test_delete_attribute_in_unfrozen_class_instance():
+    @configuration(prefix="", source=sample_configuration, frozen=False)
+    class Test:
+        SOME_A: str
+
+        def __init__(self) -> None:
+            self.SOME_B = "some_b"
+
+    t = Test()
+    del t.SOME_B
+    assert not hasattr(t, "SOME_B")

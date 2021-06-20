@@ -1,12 +1,12 @@
-from typing import Any, NoReturn
+from typing import Any, NoReturn, List
 
 
 class FrozenClassAttributesMeta(type):
     def __setattr__(self, name: str, value: Any) -> NoReturn:
-        raise FrozenClassAttributesError()
+        raise FrozenError()
 
     def __delattr__(self, name: str) -> NoReturn:
-        raise FrozenClassAttributesError()
+        raise FrozenError()
 
 
 class DirectAccessToBaseClassAttributesMeta(type):
@@ -18,6 +18,13 @@ class InjectedConfigurationClassMeta(FrozenClassAttributesMeta, DirectAccessToBa
     pass
 
 
-class FrozenClassAttributesError(RuntimeError):
+class FrozenError(AttributeError):
     def __init__(self, *args: object) -> None:
-        super().__init__("Class is frozen. modifying attributes is not allowed", *args)
+        super().__init__("Object is frozen. modifying attributes is not allowed", *args)
+
+
+def frozen_class_instance_exec_body(namespace: dict) -> None:
+    def raise_frozen_error(*_args: Any) -> NoReturn:
+        raise FrozenError()
+
+    namespace.update({"__setattr__": raise_frozen_error, "__delattr__": raise_frozen_error})
