@@ -1,4 +1,4 @@
 [flake8]
-exclude = [".venv", "venv", ".idea", ".git", ".pytest_cache", "__pycache__"]
+exclude = ["dist", ".venv", "venv", ".idea", ".git", ".pytest_cache", "__pycache__"]
 max-complexity = 10
 max-line-length = 120
