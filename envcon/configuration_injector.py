@@ -1,8 +1,7 @@
-import types
 from typing import get_type_hints, Mapping, Union, Optional, Any
 
 from .extended_environ import ExtendedEnviron
-from .metaclasses import InjectedConfigurationClassMeta, frozen_class_instance_exec_body
+from .frozen import create_frozen_class_from_another_class
 from .utils import type_utils, inspections
 
 
@@ -17,15 +16,7 @@ class _ConfigurationInjector:
     def inject_class(target_class: type, prefix: str, source: Mapping[str, str], frozen: bool) -> type:
         injector = _ConfigurationInjector(target_class, prefix, source, frozen)
         injector._inject_target_class()
-        return injector.target_class if not frozen else injector._get_target_class_frozen()
-
-    def _get_target_class_frozen(self) -> type:
-        return types.new_class(
-            self.target_class.__name__,
-            (self.target_class,),
-            kwds={"metaclass": InjectedConfigurationClassMeta},
-            exec_body=frozen_class_instance_exec_body,
-        )
+        return injector.target_class if not frozen else create_frozen_class_from_another_class(injector.target_class)
 
     def _inject_target_class(self) -> None:
         for variable_name, variable_type in get_type_hints(self.target_class).items():

@@ -1,12 +1,12 @@
 import json
-from typing import Final, Union, get_args, get_origin, List, Any
 import re
+from typing import Final, Union, get_args, get_origin, List, Any
 
 from .functional import first
 
 try:
-    # list[T], dict[T,U] etc'
-    from types import GenericAlias as _GenericAlias
+    # list[T], dict[T,U] etc'. python 38 compatibility
+    from types import GenericAlias as _GenericAlias  # type: ignore
 except ImportError:
     _GenericAlias = type("_GenericAlias", (), {})
 
@@ -37,7 +37,11 @@ def convert(value: str, to: type) -> Union[str, bool, int, float, list, dict, No
 def _get_first_optional_subtypes(type_: type) -> type:
     if not is_optional(type_):
         raise ValueError(f"{type_} is not optional (Optional[T] or Union[T, U, ..., None]")
-    return first(lambda t: not _is_none_type(t), get_args(type_))
+
+    subtype = first(lambda t: not _is_none_type(t), get_args(type_))
+    if subtype is None:
+        raise ValueError(f"{type_} is NoneType")
+    return subtype
 
 
 def is_optional(type_: type) -> bool:
@@ -67,7 +71,7 @@ def _is_generic_alias_dict_without_subscription(type_):
 def _to_list(value: str, value_type: type) -> List[Union[str, bool, int, float]]:
     type_args: Final[tuple] = get_args(value_type)
     generic_type: Final[type] = type_args[0] if type_args else str
-    return value.split(",") if generic_type is str else [generic_type(element) for element in value.split(",")]
+    return list(value.split(",")) if generic_type is str else [generic_type(element) for element in value.split(",")]
 
 
 def _to_bool(value: str) -> bool:
@@ -75,6 +79,7 @@ def _to_bool(value: str) -> bool:
     truthy = value.lower() in _TRUTHY_VALUES
     if falsy is truthy is False:
         raise ValueError(
-            f"could not convert string to bool: '{value}'. truthy values: {_TRUTHY_VALUES}, falsy values: {_FALSY_VALUES}"
+            f"could not convert string to bool: '{value}'. "
+            f"truthy values: {_TRUTHY_VALUES}, falsy values: {_FALSY_VALUES}"
         )
     return truthy
