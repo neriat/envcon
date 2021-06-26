@@ -3,16 +3,16 @@ from typing import List
 import pytest
 from envcon import configuration, FrozenError
 
-from utils import sample_configuration
+from helpers import sample_configuration
 
 
-def test_empty_configuration_class():
+def test_empty_configuration_class() -> None:
     @configuration(prefix="", source=sample_configuration)
     class Test:
         pass
 
 
-def test_simple_injection():
+def test_simple_injection() -> None:
     @configuration(prefix="", source=sample_configuration)
     class Test:
         SOME_A: str
@@ -24,7 +24,7 @@ def test_simple_injection():
     assert Test.SOME_INT == 42
 
 
-def test_missing_field():
+def test_missing_field() -> None:
     with pytest.raises(LookupError):
 
         @configuration(prefix="", source=sample_configuration)
@@ -33,7 +33,7 @@ def test_missing_field():
             NOT_EXIST: List[int]
 
 
-def test_set_attribute_in_frozen_class():
+def test_set_attribute_in_frozen_class() -> None:
     @configuration(prefix="", source=sample_configuration, frozen=True)
     class Test:
         SOME_A: str
@@ -42,7 +42,7 @@ def test_set_attribute_in_frozen_class():
         Test.SOME_A = "should fail"
 
 
-def test_delete_attribute_in_frozen_class():
+def test_delete_attribute_in_frozen_class() -> None:
     @configuration(prefix="", source=sample_configuration, frozen=True)
     class Test:
         SOME_A: str
@@ -51,7 +51,7 @@ def test_delete_attribute_in_frozen_class():
         del Test.SOME_A
 
 
-def test_set_attribute_in_frozen_class_instance():
+def test_set_attribute_in_frozen_class_instance() -> None:
     @configuration(prefix="", source=sample_configuration, frozen=True)
     class Test:
         SOME_A: str
@@ -61,7 +61,7 @@ def test_set_attribute_in_frozen_class_instance():
         t.SOME_A = "should fail"
 
 
-def test_delete_attribute_in_frozen_class_instance():
+def test_delete_attribute_in_frozen_class_instance() -> None:
     @configuration(prefix="", source=sample_configuration, frozen=True)
     class Test:
         SOME_A: str
@@ -71,7 +71,7 @@ def test_delete_attribute_in_frozen_class_instance():
         del t.SOME_A
 
 
-def test_set_attribute_in_unfrozen_class():
+def test_set_attribute_in_unfrozen_class() -> None:
     @configuration(prefix="", source=sample_configuration, frozen=False)
     class Test:
         SOME_A: str
@@ -80,7 +80,7 @@ def test_set_attribute_in_unfrozen_class():
     assert Test.SOME_A == "should not fail"
 
 
-def test_delete_attribute_in_unfrozen_class():
+def test_delete_attribute_in_unfrozen_class() -> None:
     @configuration(prefix="", source=sample_configuration, frozen=False)
     class Test:
         SOME_A: str
@@ -89,7 +89,7 @@ def test_delete_attribute_in_unfrozen_class():
     assert not hasattr(Test, "SOME_A")
 
 
-def test_set_attribute_in_unfrozen_class_instance():
+def test_set_attribute_in_unfrozen_class_instance() -> None:
     @configuration(prefix="", source=sample_configuration, frozen=False)
     class Test:
         SOME_A: str
@@ -99,7 +99,7 @@ def test_set_attribute_in_unfrozen_class_instance():
     assert t.SOME_A == "should not fail"
 
 
-def test_delete_attribute_in_unfrozen_class_instance():
+def test_delete_attribute_in_unfrozen_class_instance() -> None:
     @configuration(prefix="", source=sample_configuration, frozen=False)
     class Test:
         SOME_A: str

@@ -6,7 +6,7 @@ from .functional import first
 
 try:
     # list[T], dict[T,U] etc'. python 38 compatibility
-    from types import GenericAlias as _GenericAlias  # type: ignore
+    from types import GenericAlias as _GenericAlias  # type: ignore[attr-defined]
 except ImportError:
     _GenericAlias = type("_GenericAlias", (), {})
 
@@ -56,7 +56,7 @@ def _is_list(type_: type) -> bool:
     return type_ is list or _is_generic_alias_list(type_)
 
 
-def _is_generic_alias_list(type_):
+def _is_generic_alias_list(type_: type) -> bool:
     return get_origin(type_) is list
 
 
@@ -64,7 +64,7 @@ def _is_dict(type_: type) -> bool:
     return type_ is dict or _is_generic_alias_dict_without_subscription(type_)
 
 
-def _is_generic_alias_dict_without_subscription(type_):
+def _is_generic_alias_dict_without_subscription(type_: type) -> bool:
     return get_origin(type_) is dict and get_args(type_) == ()
 
 
