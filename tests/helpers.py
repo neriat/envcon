@@ -2,8 +2,10 @@ import sys
 
 import pytest
 
+is_python_38: bool = sys.version_info[:2] < (3, 9)
+
 skip_if_python38_is_presented = pytest.mark.skipif(
-    sys.version_info[:2] < (3, 9),
+    is_python_38,
     reason=(
         f"list and dict are not subscriptable on earlier python versions. "
         f"your version: {'.'.join(str(i) for i in (sys.version_info[:3]))}, required: >=3.9"

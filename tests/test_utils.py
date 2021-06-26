@@ -1,9 +1,9 @@
-from typing import Optional, Union, List, Dict, Callable, Sequence, TypeVar
+from typing import Optional, Union, List, Dict, Callable, Sequence, TypeVar, Any
 
 import pytest
 
 from envcon.utils import type_utils, inspections, functional
-from utils import skip_if_python38_is_presented
+from helpers import skip_if_python38_is_presented, is_python_38
 
 T = TypeVar("T")
 
@@ -26,21 +26,25 @@ T = TypeVar("T")
         (Dict[str, None], False),
     ],
 )
-def test_is_optional(type_: type, expected: bool):
+def test_is_optional(type_: type, expected: bool) -> None:
     assert type_utils.is_optional(type_) == expected
 
 
 @skip_if_python38_is_presented
 @pytest.mark.parametrize(
     "type_, expected",
-    [
-        (Optional[dict[str, int]], True),
-        (list[Optional[str]], False),
-        (dict[None, int], False),
-        (dict[str, None], False),
-    ],
+    (
+        lambda: ()
+        if is_python_38
+        else (
+            (Optional[dict[str, int]], True),  # type: ignore[misc]
+            (list[Optional[str]], False),  # type: ignore[misc]
+            (dict[None, int], False),  # type: ignore[misc]
+            (dict[str, None], False),  # type: ignore[misc]
+        )
+    )(),
 )
-def test_is_optional39(type_: type, expected: bool):
+def test_is_optional39(type_: type, expected: bool) -> None:
     assert type_utils.is_optional(type_) == expected
 
 
@@ -60,31 +64,35 @@ def test_is_optional39(type_: type, expected: bool):
         (Dict[List, list], False),
     ],
 )
-def test_is_list(type_: type, expected: bool):
+def test_is_list(type_: type, expected: bool) -> None:
     assert type_utils._is_list(type_) == expected
 
 
 @skip_if_python38_is_presented
 @pytest.mark.parametrize(
     "type_, expected",
-    [
-        (list[str], True),
-        (list[dict], True),
-        (Optional[list[int]], False),
-        (dict[list, str], False),
-    ],
+    (
+        lambda: ()
+        if is_python_38
+        else (
+            (list[str], True),  # type: ignore[misc]
+            (list[dict], True),  # type: ignore[misc]
+            (Optional[list[int]], False),  # type: ignore[misc]
+            (dict[list, str], False),  # type: ignore[misc]
+        )
+    )(),
 )
-def test_is_list39(type_: type, expected: bool):
+def test_is_list39(type_: type, expected: bool) -> None:
     assert type_utils._is_list(type_) == expected
 
 
-def test_retrieve_name():
-    vari = "some"
-    able = "value"
-    a = {}
-    b = {}
-    c = dict()
-    d = dict()
+def test_retrieve_name() -> None:
+    vari: str = "some"
+    able: str = "value"
+    a: dict = {}
+    b: dict = {}
+    c: dict = dict()
+    d: dict = dict()
 
     assert inspections.retrieve_name(vari) == "vari"
     assert inspections.retrieve_name(able) == "able"
@@ -103,5 +111,5 @@ def test_retrieve_name():
         (["a1", "a2", "aa3", "aaa4"], lambda s: s.startswith("aa"), "aa3"),
     ],
 )
-def test_first(array: Sequence[T], predicate: Callable[[Sequence[T]], bool], expected: Optional[T]):
+def test_first(array: Sequence[T], predicate: Callable[[Optional[T]], Any], expected: Optional[T]) -> None:
     assert functional.first(predicate, array) == expected
