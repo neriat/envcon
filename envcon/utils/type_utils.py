@@ -8,7 +8,7 @@ try:
     # list[T], dict[T,U] etc'. python 38 compatibility
     from types import GenericAlias as _GenericAlias  # type: ignore[attr-defined]
 except ImportError:
-    _GenericAlias = type("_GenericAlias", (), {})
+    _GenericAlias = type("_GenericAlias", (), {})  # type: ignore[assignment,misc]
 
 _FALSY_VALUES = ["", "0", "n", "no", "false"]
 _TRUTHY_VALUES = ["1", "y", "yes", "true"]
