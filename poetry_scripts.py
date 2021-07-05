@@ -9,6 +9,10 @@ def deploy():
     os.system("poetry install && poetry build && poetry publish")
 
 
+def increment_minor():
+    os.system('poetry version minor && git commit -am "Increment minor version"')
+
+
 def black():
     poetry_run("black .")
 
