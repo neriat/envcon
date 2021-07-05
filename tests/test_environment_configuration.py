@@ -1,6 +1,7 @@
-import os
-from typing import List, Dict, Generator
 import itertools
+import os
+from dataclasses import dataclass
+from typing import List, Dict, Generator
 
 import pytest
 
@@ -154,3 +155,59 @@ def test_injection_with_prefix() -> None:
     assert Test.A == "value_a"
     assert Test.B == "value_b"
     assert Test.INT == 42
+
+
+@pytest.mark.parametrize("frozen", (True, False))
+def test_injection_in_inherited_class(frozen: bool) -> None:
+    class Parent:
+        SOME_A: str
+        SOME_B: str
+
+    @environment_configuration(frozen=frozen)
+    class Child(Parent):
+        SOME_INT: int
+
+    assert Child.SOME_A == "value_a"
+    assert Child.SOME_B == "value_b"
+    assert Child.SOME_INT == 42
+
+
+@pytest.mark.parametrize("frozen", (True, False))
+def test_injection_in_inherited_simple_lass(frozen: bool) -> None:
+    class Parent:
+        LIST_STRING: list
+
+    @environment_configuration(frozen=frozen)
+    class Child(Parent):
+        SOME_INT: int
+
+    assert Child.LIST_STRING == ["a", "b", "c"]
+    assert Child.SOME_INT == 42
+
+
+@pytest.mark.parametrize("frozen_parent, frozen_child", itertools.product((True, False), repeat=2))
+def test_injection_in_inherited_dataclass(frozen_parent: bool, frozen_child: bool) -> None:
+    @dataclass(frozen=frozen_parent)  # type: ignore[misc]
+    class Parent:
+        LIST_STRING: list
+
+    @environment_configuration(frozen=frozen_child)
+    class Child(Parent):
+        SOME_INT: int
+
+    assert Child.LIST_STRING == ["a", "b", "c"]
+    assert Child.SOME_INT == 42
+
+
+@pytest.mark.parametrize("frozen_parent, frozen_child", itertools.product((True, False), repeat=2))
+def test_injection_in_inherited_env_config_class(frozen_parent: bool, frozen_child: bool) -> None:
+    @environment_configuration(frozen=frozen_parent)
+    class Parent:
+        LIST_STRING: list
+
+    @environment_configuration(frozen=frozen_child)
+    class Child(Parent):
+        SOME_INT: int
+
+    assert Child.LIST_STRING == ["a", "b", "c"]
+    assert Child.SOME_INT == 42

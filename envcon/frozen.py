@@ -1,18 +1,32 @@
 import types
 from typing import Any, NoReturn
 
+from .utils.functional import first
 
-class _DirectAccessToBaseClassAttributesMeta(type):
+_getattr = object.__getattribute__
+
+
+class _AccessBaseClassAttributesIfBaseAndDerivedShareSameNameMeta(type):
     def __getattribute__(self, name: str) -> Any:
-        return getattr(object.__getattribute__(self, "__base__"), name)
+        self_name = _getattr(self, "__name__")
+        bases = _getattr(self, "__bases__")
+        base = first(lambda b: _getattr(b, "__name__") == self_name, bases)
+        return _getattr(base, name) if base else _getattr(self, name)
 
 
-class _FrozenClassAttributesMeta(_DirectAccessToBaseClassAttributesMeta):
+class _FrozenInstanceAttributesBase:
     def __setattr__(self, name: str, value: Any) -> NoReturn:
         raise FrozenError()
 
     def __delattr__(self, name: str) -> NoReturn:
         raise FrozenError()
+
+
+class _FrozenClassAttributesMeta(
+    _FrozenInstanceAttributesBase,
+    _AccessBaseClassAttributesIfBaseAndDerivedShareSameNameMeta,
+):
+    pass
 
 
 class FrozenError(AttributeError):
@@ -21,12 +35,9 @@ class FrozenError(AttributeError):
 
 
 def create_frozen_class_from_another_class(cls: type) -> type:
-    def raise_frozen_error(*_args: Any) -> NoReturn:
-        raise FrozenError()
 
     return types.new_class(
         cls.__name__,
-        (cls,),
+        (cls, _FrozenInstanceAttributesBase),
         kwds={"metaclass": _FrozenClassAttributesMeta},
-        exec_body=lambda ns: ns.update({"__setattr__": raise_frozen_error, "__delattr__": raise_frozen_error}),
     )

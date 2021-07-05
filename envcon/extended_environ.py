@@ -6,7 +6,7 @@ import dotenv
 
 class ExtendedEnviron(Mapping[str, str]):
     def __init__(self, read_dot_env_file: bool) -> None:
-        self._dot_env: Optional[Dict[str, Optional[str]]] = dotenv.dotenv_values(".env") if read_dot_env_file else None
+        self._dot_env: Dict[str, Optional[str]] = dotenv.dotenv_values(".env") if read_dot_env_file else {}
 
     def __getitem__(self, key: str) -> str:
         if not isinstance(key, str):
