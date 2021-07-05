@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "envcon"
-version = "1.4.0"
+version = "1.4.1"
 description = "envcon: environment variables parsing using type-hints"
 license = "MIT"
 authors = ["Neria <me@neria.dev>"]
@@ -37,14 +37,6 @@ mypy = "^0.910"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-deploy = "poetry_scripts:deploy"
-increment_minor = "poetry_scripts:increment_minor"
-fmt = "poetry_scripts:black"
-lint = "poetry_scripts:flake8"
-mypy = "poetry_scripts:mypy"
-mypy-all = "poetry_scripts:mypy_all"
 
 [tool.black]
 line-length = 120
