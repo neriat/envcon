@@ -5,7 +5,10 @@ function deploy() {
 }
 
 function increment_minor() {
-  poetry version minor && git commit -am "Increment minor version"
+  current_version=$(poetry version | awk '{ print $NF }')
+  poetry version minor
+  next_version=$(poetry version | awk '{ print $NF }')
+  git commit -am "Increment minor version [${current_version} -> ${next_version}]"
 }
 
 function fmt() {
