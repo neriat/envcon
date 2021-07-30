@@ -100,7 +100,7 @@ def test_set_attribute_in_unfrozen_class_instance() -> None:
 
 
 def test_delete_attribute_in_unfrozen_class_instance() -> None:
-    @configuration(prefix="", source=sample_configuration, frozen=False)
+    @configuration(prefix="", source=sample_configuration, frozen=False, override_init=False)
     class Test:
         SOME_A: str
 

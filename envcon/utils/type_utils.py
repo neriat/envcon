@@ -22,13 +22,13 @@ def name(type_: type) -> str:
 def convert(value: str, to: type) -> Union[str, bool, int, float, list, dict, None]:
     if is_optional(to):
         return convert(value, _get_first_optional_subtypes(to))
-    elif to in [str, int, float]:
+    if to in [str, int, float]:
         return to(value)
-    elif to is bool:
+    if to is bool:
         return _to_bool(value)
-    elif _is_list(to):
+    if _is_list(to):
         return _to_list(value, to)
-    elif _is_dict(to):
+    if _is_dict(to):
         return json.loads(value)
 
     raise ValueError(f"unsupported type for convert(): '{to}'")

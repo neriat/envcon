@@ -1,7 +1,7 @@
 import itertools
 import os
 from dataclasses import dataclass
-from typing import List, Dict, Generator
+from typing import List, Dict, Generator, Iterable
 
 import pytest
 
@@ -211,3 +211,96 @@ def test_injection_in_inherited_env_config_class(frozen_parent: bool, frozen_chi
 
     assert Child.LIST_STRING == ["a", "b", "c"]
     assert Child.SOME_INT == 42
+
+
+def test_override_repr_function_parameterization() -> Iterable:
+    prefix = "test_override_repr_function_parameterization.<locals>."
+
+    @dataclass(repr=False)
+    class Empty:
+        _expected_repr = "Empty()"
+
+    @dataclass(repr=False)
+    class OneValue:
+        SOME_A: str
+        _expected_repr = "OneValue(SOME_A=value_a)"
+
+    @dataclass(repr=False)
+    class TwoValues:
+        SOME_A: str
+        SOME_INT: int
+        _expected_repr = "TwoValues(SOME_A=value_a,SOME_INT=42)"
+
+    @dataclass(repr=False)
+    class TestDict:
+        DICT_ENV: dict
+        _expected_repr = "TestDict(DICT_ENV={'key': 'value', 'a': 42})"
+
+    @dataclass(repr=False)
+    class Test:
+        SOME_A: str
+        LIST_STRING: list
+        DICT_ENV: dict
+        _expected_repr = "Test(SOME_A=value_a,LIST_STRING=['a', 'b', 'c'],DICT_ENV={'key': 'value', 'a': 42})"
+
+    classes = (Empty, OneValue, TwoValues, TestDict, Test)
+    return ((cls, prefix + cls._expected_repr) for cls in classes)  # type: ignore[attr-defined]
+
+
+@pytest.mark.parametrize("cls, repr_string", test_override_repr_function_parameterization())
+def test_override_repr_function(cls: type, repr_string: str) -> None:
+    assert repr(environment_configuration(cls)()) == repr_string
+
+
+@pytest.mark.parametrize("cls, repr_string", test_override_repr_function_parameterization())
+def test_no_override_repr_function(cls: type, repr_string: str) -> None:
+    assert repr(environment_configuration(override_repr=False)(cls)()) != repr_string
+
+
+def test_override_init_function_parameterization() -> Iterable:
+    class OneInitParam:
+        def __init__(self, some_num: int) -> None:
+            self.some_num = some_num
+
+    class OneClassMemberOneInitParam:
+        SOME_A: str
+
+        def __init__(self, string: str) -> None:
+            self.string = string
+
+    # this is VERY bad. you should not override init in dataclass
+
+    @dataclass
+    class OneInitParamDataclass:
+        def __init__(self, some_num: int) -> None:
+            self.some_num = some_num
+
+    @dataclass
+    class OneClassMemberOneInitParamDataclass:
+        SOME_A: str
+
+        def __init__(self, string: str) -> None:
+            self.string = string
+
+    return (
+        (OneInitParam, (42,)),
+        (OneClassMemberOneInitParam, ("4~2",)),
+        (OneInitParamDataclass, (42,)),
+        (OneClassMemberOneInitParamDataclass, ("42!",)),
+    )
+
+
+@pytest.mark.parametrize("cls, init_variables", test_override_init_function_parameterization())
+def test_override_init_function(cls: type, init_variables: tuple) -> None:
+    new_class = environment_configuration(cls)
+    with pytest.raises(TypeError):
+        new_class(*init_variables)
+    new_class()
+
+
+@pytest.mark.parametrize("cls, init_variables", test_override_init_function_parameterization())
+def test_no_override_init_function(cls: type, init_variables: tuple) -> None:
+    new_class = environment_configuration(override_init=False, frozen=False)(cls)
+    with pytest.raises(TypeError):
+        new_class()
+    new_class(*init_variables)

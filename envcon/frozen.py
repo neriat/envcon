@@ -35,7 +35,6 @@ class FrozenError(AttributeError):
 
 
 def create_frozen_class_from_another_class(cls: type) -> type:
-
     return types.new_class(
         cls.__name__,
         (cls, _FrozenInstanceAttributesBase),
