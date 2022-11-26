@@ -26,6 +26,7 @@ def environment_configuration(
     *,
     prefix: str = "",
     include_dot_env_file: bool = True,
+    dot_env_path: str = ".env",
     frozen: bool = True,
     override_init: bool = True,
     override_repr: bool = True,
@@ -43,13 +44,14 @@ def environment_configuration(
     *,
     prefix: str = "",
     include_dot_env_file: bool = True,
+    dot_env_path: str = ".env",
     frozen: bool = True,
     override_init: bool = True,
     override_repr: bool = True,
 ) -> Union[Class, Callable[[Class], Class]]:
     wrap = configuration(
         prefix=prefix,
-        source=ExtendedEnviron(include_dot_env_file),
+        source=ExtendedEnviron(include_dot_env_file, dot_env_path),
         frozen=frozen,
         override_init=override_init,
         override_repr=override_repr,
