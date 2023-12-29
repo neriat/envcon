@@ -23,6 +23,8 @@ def test_freeze_class_parameterization(metaclass: Optional[type] = None) -> tupl
 
     return EmptyClass, WithClassAttributes
 
+test_freeze_class_parameterization.__test__ = False
+
 
 def test_access_base_class_attributes_if_base_and_subclass_share_same_name_meta() -> None:
     class Bla:

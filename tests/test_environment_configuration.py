@@ -82,7 +82,6 @@ def test_list_from_typing_injection() -> None:
 
 def test_missing_field() -> None:
     with pytest.raises(LookupError):
-
         @environment_configuration
         class Test:
             SOME_A: str
@@ -98,7 +97,6 @@ def test_missing_field_but_has_default_value() -> None:
 
 def test_cast_int_error() -> None:
     with pytest.raises(ValueError):
-
         @environment_configuration
         class Test:
             SOME_A: int
@@ -106,7 +104,6 @@ def test_cast_int_error() -> None:
 
 def test_cast_list_error() -> None:
     with pytest.raises(ValueError):
-
         @environment_configuration
         class Test:
             LIST_STRING: List[int]
@@ -247,6 +244,9 @@ def test_override_repr_function_parameterization() -> Iterable:
     return ((cls, prefix + cls._expected_repr) for cls in classes)  # type: ignore[attr-defined]
 
 
+test_override_repr_function_parameterization.__test__ = False
+
+
 @pytest.mark.parametrize("cls, repr_string", test_override_repr_function_parameterization())
 def test_override_repr_function(cls: type, repr_string: str) -> None:
     assert repr(environment_configuration(cls)()) == repr_string
@@ -288,6 +288,9 @@ def test_override_init_function_parameterization() -> Iterable:
         (OneInitParamDataclass, (42,)),
         (OneClassMemberOneInitParamDataclass, ("42!",)),
     )
+
+
+test_override_init_function_parameterization.__test__ = False
 
 
 @pytest.mark.parametrize("cls, init_variables", test_override_init_function_parameterization())
