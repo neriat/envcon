@@ -1,12 +1,12 @@
 import itertools
 import os
 from dataclasses import dataclass
-from typing import List, Dict, Generator, Iterable
+from typing import List, Dict, Generator, Iterable, Any
 
 import pytest
 
 from envcon import environment_configuration
-from helpers import sample_configuration, skip_if_python38_is_presented
+from helpers import sample_configuration, skip_if_python38_is_presented, not_test
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -82,6 +82,7 @@ def test_list_from_typing_injection() -> None:
 
 def test_missing_field() -> None:
     with pytest.raises(LookupError):
+
         @environment_configuration
         class Test:
             SOME_A: str
@@ -97,6 +98,7 @@ def test_missing_field_but_has_default_value() -> None:
 
 def test_cast_int_error() -> None:
     with pytest.raises(ValueError):
+
         @environment_configuration
         class Test:
             SOME_A: int
@@ -104,6 +106,7 @@ def test_cast_int_error() -> None:
 
 def test_cast_list_error() -> None:
     with pytest.raises(ValueError):
+
         @environment_configuration
         class Test:
             LIST_STRING: List[int]
@@ -184,7 +187,7 @@ def test_injection_in_inherited_simple_lass(frozen: bool) -> None:
 
 @pytest.mark.parametrize("frozen_parent, frozen_child", itertools.product((True, False), repeat=2))
 def test_injection_in_inherited_dataclass(frozen_parent: bool, frozen_child: bool) -> None:
-    @dataclass(frozen=frozen_parent)  # type: ignore[misc]
+    @dataclass(frozen=frozen_parent)  # type: ignore[literal-required]
     class Parent:
         LIST_STRING: list
 
@@ -210,6 +213,7 @@ def test_injection_in_inherited_env_config_class(frozen_parent: bool, frozen_chi
     assert Child.SOME_INT == 42
 
 
+@not_test
 def test_override_repr_function_parameterization() -> Iterable:
     prefix = "test_override_repr_function_parameterization.<locals>."
 
@@ -244,9 +248,6 @@ def test_override_repr_function_parameterization() -> Iterable:
     return ((cls, prefix + cls._expected_repr) for cls in classes)  # type: ignore[attr-defined]
 
 
-test_override_repr_function_parameterization.__test__ = False
-
-
 @pytest.mark.parametrize("cls, repr_string", test_override_repr_function_parameterization())
 def test_override_repr_function(cls: type, repr_string: str) -> None:
     assert repr(environment_configuration(cls)()) == repr_string
@@ -254,9 +255,10 @@ def test_override_repr_function(cls: type, repr_string: str) -> None:
 
 @pytest.mark.parametrize("cls, repr_string", test_override_repr_function_parameterization())
 def test_no_override_repr_function(cls: type, repr_string: str) -> None:
-    assert repr(environment_configuration(override_repr=False)(cls)()) != repr_string
+    assert repr(environment_configuration(override_repr=False)(cls)()) != repr_string  # type: ignore[misc]
 
 
+@not_test
 def test_override_init_function_parameterization() -> Iterable:
     class OneInitParam:
         def __init__(self, some_num: int) -> None:
@@ -290,9 +292,6 @@ def test_override_init_function_parameterization() -> Iterable:
     )
 
 
-test_override_init_function_parameterization.__test__ = False
-
-
 @pytest.mark.parametrize("cls, init_variables", test_override_init_function_parameterization())
 def test_override_init_function(cls: type, init_variables: tuple) -> None:
     new_class = environment_configuration(cls)
@@ -303,7 +302,7 @@ def test_override_init_function(cls: type, init_variables: tuple) -> None:
 
 @pytest.mark.parametrize("cls, init_variables", test_override_init_function_parameterization())
 def test_no_override_init_function(cls: type, init_variables: tuple) -> None:
-    new_class = environment_configuration(override_init=False, frozen=False)(cls)
+    new_class: type = environment_configuration(override_init=False, frozen=False)(cls)
     with pytest.raises(TypeError):
         new_class()
     new_class(*init_variables)

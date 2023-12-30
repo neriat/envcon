@@ -1,3 +1,4 @@
+from dataclasses import FrozenInstanceError
 from typing import Any, Optional
 
 import pytest
@@ -6,11 +7,12 @@ import pytest
 from envcon.frozen import (
     _AccessBaseClassAttributesIfBaseAndDerivedShareSameNameMeta,
     _FrozenClassAttributesMeta,
-    FrozenError,
     create_frozen_class_from_another_class,
 )
+from helpers import not_test
 
 
+@not_test
 def test_freeze_class_parameterization(metaclass: Optional[type] = None) -> tuple:
     Meta: Any = metaclass if metaclass else type
 
@@ -22,8 +24,6 @@ def test_freeze_class_parameterization(metaclass: Optional[type] = None) -> tupl
         blu: float = 0.42
 
     return EmptyClass, WithClassAttributes
-
-test_freeze_class_parameterization.__test__ = False
 
 
 def test_access_base_class_attributes_if_base_and_subclass_share_same_name_meta() -> None:
@@ -43,9 +43,9 @@ def test_access_base_class_attributes_if_base_and_subclass_share_same_name_meta(
 
 @pytest.mark.parametrize("cls", test_freeze_class_parameterization(metaclass=_FrozenClassAttributesMeta))
 def test_frozen_class_attributes_meta(cls: type) -> None:
-    with pytest.raises(FrozenError):
+    with pytest.raises(FrozenInstanceError):
         cls.bla = 41  # type: ignore[attr-defined]
-    with pytest.raises(FrozenError):
+    with pytest.raises(FrozenInstanceError):
         del cls.bla  # type: ignore[attr-defined]
 
 
@@ -53,9 +53,9 @@ def test_frozen_class_attributes_meta(cls: type) -> None:
 def test_create_frozen_class_from_another_class(cls: type) -> None:
     FrozenClass = create_frozen_class_from_another_class(cls)
     t = FrozenClass()
-    with pytest.raises(FrozenError):
+    with pytest.raises(FrozenInstanceError):
         t.bla = 41
-    with pytest.raises(FrozenError):
+    with pytest.raises(FrozenInstanceError):
         del t.blu
 
 
@@ -65,5 +65,5 @@ def test_freeze_modify_instance_attributes() -> None:
             self.bla: int = bla
 
     FrozenTest = create_frozen_class_from_another_class(WithInstanceAttributes)
-    with pytest.raises(FrozenError):
+    with pytest.raises(FrozenInstanceError):
         FrozenTest()

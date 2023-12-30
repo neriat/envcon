@@ -1,7 +1,8 @@
 from typing import List
 
 import pytest
-from envcon import configuration, FrozenError
+from envcon import configuration
+from dataclasses import FrozenInstanceError
 
 from helpers import sample_configuration
 
@@ -38,7 +39,7 @@ def test_set_attribute_in_frozen_class() -> None:
     class Test:
         SOME_A: str
 
-    with pytest.raises(FrozenError):
+    with pytest.raises(FrozenInstanceError):
         Test.SOME_A = "should fail"
 
 
@@ -47,7 +48,7 @@ def test_delete_attribute_in_frozen_class() -> None:
     class Test:
         SOME_A: str
 
-    with pytest.raises(FrozenError):
+    with pytest.raises(FrozenInstanceError):
         del Test.SOME_A
 
 
@@ -57,7 +58,7 @@ def test_set_attribute_in_frozen_class_instance() -> None:
         SOME_A: str
 
     t = Test()
-    with pytest.raises(FrozenError):
+    with pytest.raises(FrozenInstanceError):
         t.SOME_A = "should fail"
 
 
@@ -67,7 +68,7 @@ def test_delete_attribute_in_frozen_class_instance() -> None:
         SOME_A: str
 
     t = Test()
-    with pytest.raises(FrozenError):
+    with pytest.raises(FrozenInstanceError):
         del t.SOME_A
 
 

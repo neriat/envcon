@@ -1,4 +1,5 @@
 import sys
+from typing import Callable
 
 import pytest
 
@@ -23,3 +24,11 @@ sample_configuration: dict = {
     "ZXC_SOME_A": "prefixed_a",
     "ZXC_SOME_B": "prefixed_a",
 }
+
+
+def not_test(func: Callable) -> Callable:
+    """
+    pytest 7 assume any function is a test, this is not always the case
+    """
+    func.__test__ = False  # type: ignore[attr-defined]
+    return func

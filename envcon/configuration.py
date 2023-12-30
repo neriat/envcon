@@ -1,10 +1,11 @@
-from typing import Callable, Union, Mapping, TypeVar, Type, Optional, overload
+import typing
+from typing import Callable, Union, Mapping, TypeVar, Type, Optional, overload, TypeAlias
 
 from .configuration_injector import ConfigurationInjector
 from .extended_environ import ExtendedEnviron
 
 T = TypeVar("T")
-Class = Union[type, Type[T]]  # type for mypy, Type[T] for pycharm 2021.1.1
+Class: TypeAlias = Union[type, Type[T], T]  # type for mypy, Type[T] for pycharm 2023.3.2
 
 
 def configuration(
@@ -14,9 +15,12 @@ def configuration(
     frozen: bool = True,
     override_init: bool = True,
     override_repr: bool = True,
-) -> Callable[[type], type]:
-    def wrap(cls: type) -> type:
-        return ConfigurationInjector(cls, prefix, source, frozen, override_init, override_repr).process_class()
+) -> Callable[[Type[T]], T]:
+    def wrap(cls: Type[T]) -> T:
+        # this cast is necessary for code-assistant and has no effect
+        return typing.cast(
+            T, ConfigurationInjector(cls, prefix, source, frozen, override_init, override_repr).process_class()
+        )
 
     return wrap
 
@@ -30,7 +34,7 @@ def environment_configuration(
     frozen: bool = True,
     override_init: bool = True,
     override_repr: bool = True,
-) -> Callable[[Class], Class]:
+) -> Callable[[Class], T]:
     ...
 
 
@@ -48,7 +52,7 @@ def environment_configuration(
     frozen: bool = True,
     override_init: bool = True,
     override_repr: bool = True,
-) -> Union[Class, Callable[[Class], Class]]:
+) -> Union[Class, Callable[[Type[T]], T]]:
     wrap = configuration(
         prefix=prefix,
         source=ExtendedEnviron(include_dot_env_file, dot_env_path),
