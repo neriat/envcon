@@ -1,7 +1,7 @@
 import itertools
 import os
 from dataclasses import dataclass
-from typing import List, Dict, Generator, Iterable, Any
+from typing import List, Dict, Generator, Iterable
 
 import pytest
 

@@ -1,8 +1,14 @@
 import typing
-from typing import Callable, Union, Mapping, TypeVar, Type, Optional, overload, TypeAlias
+from typing import Callable, Union, Mapping, TypeVar, Type, Optional, overload
 
 from .configuration_injector import ConfigurationInjector
 from .extended_environ import ExtendedEnviron
+
+try:
+    from typing import TypeAlias
+except ImportError:
+    # python 3.8-9 compatibility
+    TypeAlias = type("TypeAlias", (), {})  # type: ignore[assignment]
 
 T = TypeVar("T")
 Class: TypeAlias = Union[type, Type[T], T]  # type for mypy, Type[T] for pycharm 2023.3.2
