@@ -1,6 +1,4 @@
 from .configuration import environment_configuration, configuration
-from dataclasses import FrozenInstanceError
+from .utils import converter
 
-FrozenError = FrozenInstanceError  # compat. will be removed next major
-
-__all__ = ["environment_configuration", "configuration", "FrozenError"]
+__all__ = ["environment_configuration", "configuration", "converter"]

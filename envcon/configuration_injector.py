@@ -14,30 +14,21 @@ class ConfigurationInjector:
         target_class: type,
         prefix: str,
         source: Mapping[str, str],
-        frozen: bool,
-        override_init: bool,
-        override_repr: bool,
     ) -> None:
-        self.target_class = target_class
+        self.target_class = create_frozen_class_from_another_class(target_class)
         self.prefix = prefix
         self.source = source
-        self.frozen = frozen
-        self.override_init = override_init
-        self.override_repr = override_repr
 
         self._target_class_variables_injected_values = self._get_all_variables_values()
 
     def process_class(self) -> type:
-        if self.override_init:
-            self._set_attribute_in_target_class("__init__", self._create_init_function())
-
-        if self.override_repr:
-            self._set_attribute_in_target_class("__repr__", self._create_repr_function())
+        self._set_attribute_in_target_class("__init__", self._create_init_function())
+        self._set_attribute_in_target_class("__repr__", self._create_repr_function())
 
         for variable_name, value in self._target_class_variables_injected_values.items():
             self._set_attribute_in_target_class(variable_name, value)
 
-        return self.target_class if not self.frozen else create_frozen_class_from_another_class(self.target_class)
+        return self.target_class
 
     @staticmethod
     def _create_init_function() -> Callable[[Self], None]:
@@ -52,16 +43,14 @@ class ConfigurationInjector:
 
         def __repr__(self: Self) -> str:
             comma_separated_values = ",".join(
-                f"{var_name}={getattr(self, var_name)}"
-                for var_name in filter(lambda var_name: hasattr(self, var_name), variables_names)
+                f"{var_name}={getattr(self, var_name)}" for var_name in variables_names if hasattr(self, var_name)
             )
             return f"{class_name}({comma_separated_values})"
 
         return __repr__
 
     def _set_attribute_in_target_class(self, name: str, value: Any) -> None:
-        # why not directly call setattr?
-        # because we need to skip _FrozenClassAttributesMeta restrictions if presented any in case of inheritance
+        # why not directly call setattr?  because we need to skip _FrozenClassAttributesMeta restrictions
         type.__setattr__(self.target_class, name, value)
 
     def _get_all_variables_values(self) -> Dict[str, Union[str, bool, int, float, list, dict, None]]:
@@ -74,7 +63,7 @@ class ConfigurationInjector:
         default_value = getattr(self.target_class, var_name, None)
         lookup_key = self.prefix + var_name
         value = self.source.get(lookup_key, None)
-        if value is None and default_value is None and not type_utils.is_optional(var_type):
+        if value is None and default_value is None and not type_utils._is_optional(var_type):
             self._raise_missing_variable(var_name, lookup_key)
         try:
             return default_value if value is None else type_utils.convert(value, var_type)

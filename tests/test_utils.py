@@ -2,7 +2,7 @@ from typing import Optional, Union, List, Dict, Callable, Sequence, TypeVar, Any
 
 import pytest
 
-from envcon.utils import type_utils, inspections, functional
+from envcon.utils import type_utils, inspections, functional, converter
 from helpers import skip_if_python38_is_presented, is_python_38
 
 T = TypeVar("T")
@@ -27,7 +27,7 @@ T = TypeVar("T")
     ],
 )
 def test_is_optional(type_: type, expected: bool) -> None:
-    assert type_utils.is_optional(type_) == expected
+    assert type_utils._is_optional(type_) == expected
 
 
 @skip_if_python38_is_presented
@@ -45,7 +45,7 @@ def test_is_optional(type_: type, expected: bool) -> None:
     )(),
 )
 def test_is_optional39(type_: type, expected: bool) -> None:
-    assert type_utils.is_optional(type_) == expected
+    assert type_utils._is_optional(type_) == expected
 
 
 @pytest.mark.parametrize(
@@ -65,7 +65,7 @@ def test_is_optional39(type_: type, expected: bool) -> None:
     ],
 )
 def test_is_list(type_: type, expected: bool) -> None:
-    assert type_utils._is_list(type_) == expected
+    assert converter.ListConverter.can_convert(type_) == expected
 
 
 @skip_if_python38_is_presented
@@ -83,7 +83,7 @@ def test_is_list(type_: type, expected: bool) -> None:
     )(),
 )
 def test_is_list39(type_: type, expected: bool) -> None:
-    assert type_utils._is_list(type_) == expected
+    assert converter.ListConverter.can_convert(type_) == expected
 
 
 def test_retrieve_name() -> None:

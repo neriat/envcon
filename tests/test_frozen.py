@@ -5,7 +5,6 @@ import pytest
 
 # noinspection PyProtectedMember
 from envcon.frozen import (
-    _AccessBaseClassAttributesIfBaseAndDerivedShareSameNameMeta,
     _FrozenClassAttributesMeta,
     create_frozen_class_from_another_class,
 )
@@ -26,19 +25,18 @@ def test_freeze_class_parameterization(metaclass: Optional[type] = None) -> tupl
     return EmptyClass, WithClassAttributes
 
 
-def test_access_base_class_attributes_if_base_and_subclass_share_same_name_meta() -> None:
+def test_access_base_class_attributes_if_base_and_subclass_share_same_name() -> None:
     class Bla:
         attr: int = 42
 
-    class Blu(Bla, metaclass=_AccessBaseClassAttributesIfBaseAndDerivedShareSameNameMeta):
+    class Blu(Bla):
         attr: int = 420
 
-    class Bla(Bla, metaclass=_AccessBaseClassAttributesIfBaseAndDerivedShareSameNameMeta):  # type: ignore[no-redef]
+    class Bla(Bla):  # type: ignore[no-redef]
         attr: int = 0x420
 
     assert Blu.attr == 420
-    assert Bla.attr == 42
-    assert object.__getattribute__(Bla, "attr") == 0x420
+    assert Bla.attr == 0x420
 
 
 @pytest.mark.parametrize("cls", test_freeze_class_parameterization(metaclass=_FrozenClassAttributesMeta))

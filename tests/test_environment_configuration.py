@@ -1,7 +1,6 @@
-import itertools
 import os
 from dataclasses import dataclass
-from typing import List, Dict, Generator, Iterable, Any
+from typing import List, Dict, Generator, Iterable
 
 import pytest
 
@@ -157,13 +156,12 @@ def test_injection_with_prefix() -> None:
     assert Test.INT == 42
 
 
-@pytest.mark.parametrize("frozen", (True, False))
-def test_injection_in_inherited_class(frozen: bool) -> None:
+def test_injection_in_inherited_class() -> None:
     class Parent:
         SOME_A: str
         SOME_B: str
 
-    @environment_configuration(frozen=frozen)
+    @environment_configuration
     class Child(Parent):
         SOME_INT: int
 
@@ -172,12 +170,11 @@ def test_injection_in_inherited_class(frozen: bool) -> None:
     assert Child.SOME_INT == 42
 
 
-@pytest.mark.parametrize("frozen", (True, False))
-def test_injection_in_inherited_simple_lass(frozen: bool) -> None:
+def test_injection_in_inherited_simple_lass() -> None:
     class Parent:
         LIST_STRING: list
 
-    @environment_configuration(frozen=frozen)
+    @environment_configuration()
     class Child(Parent):
         SOME_INT: int
 
@@ -185,13 +182,13 @@ def test_injection_in_inherited_simple_lass(frozen: bool) -> None:
     assert Child.SOME_INT == 42
 
 
-@pytest.mark.parametrize("frozen_parent, frozen_child", itertools.product((True, False), repeat=2))
-def test_injection_in_inherited_dataclass(frozen_parent: bool, frozen_child: bool) -> None:
+@pytest.mark.parametrize("frozen_parent", (True, False))
+def test_injection_in_inherited_dataclass(frozen_parent: bool) -> None:
     @dataclass(frozen=frozen_parent)  # type: ignore[literal-required]
     class Parent:
         LIST_STRING: list
 
-    @environment_configuration(frozen=frozen_child)
+    @environment_configuration()
     class Child(Parent):
         SOME_INT: int
 
@@ -199,13 +196,12 @@ def test_injection_in_inherited_dataclass(frozen_parent: bool, frozen_child: boo
     assert Child.SOME_INT == 42
 
 
-@pytest.mark.parametrize("frozen_parent, frozen_child", itertools.product((True, False), repeat=2))
-def test_injection_in_inherited_env_config_class(frozen_parent: bool, frozen_child: bool) -> None:
-    @environment_configuration(frozen=frozen_parent)
+def test_injection_in_inherited_env_config_class() -> None:
+    @environment_configuration
     class Parent:
         LIST_STRING: list
 
-    @environment_configuration(frozen=frozen_child)
+    @environment_configuration
     class Child(Parent):
         SOME_INT: int
 
@@ -248,16 +244,6 @@ def test_override_repr_function_parameterization() -> Iterable:
     return ((cls, prefix + cls._expected_repr) for cls in classes)  # type: ignore[attr-defined]
 
 
-@pytest.mark.parametrize("cls, repr_string", test_override_repr_function_parameterization())
-def test_override_repr_function(cls: type, repr_string: str) -> None:
-    assert repr(environment_configuration(cls)()) == repr_string
-
-
-@pytest.mark.parametrize("cls, repr_string", test_override_repr_function_parameterization())
-def test_no_override_repr_function(cls: type, repr_string: str) -> None:
-    assert repr(environment_configuration(override_repr=False)(cls)()) != repr_string  # type: ignore[misc]
-
-
 @not_test
 def test_override_init_function_parameterization() -> Iterable:
     class OneInitParam:
@@ -298,11 +284,3 @@ def test_override_init_function(cls: type, init_variables: tuple) -> None:
     with pytest.raises(TypeError):
         new_class(*init_variables)
     new_class()
-
-
-@pytest.mark.parametrize("cls, init_variables", test_override_init_function_parameterization())
-def test_no_override_init_function(cls: type, init_variables: tuple) -> None:
-    new_class: type = environment_configuration(override_init=False, frozen=False)(cls)
-    with pytest.raises(TypeError):
-        new_class()
-    new_class(*init_variables)
